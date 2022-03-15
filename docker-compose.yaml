@@ -1,0 +1,47 @@
+version: '3.3'
+services:
+  postgres:
+    image: postgres
+    hostname: postgres
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  kafka-connect:
+    image: confluentinc/cp-schema-registry:7.0.1
+    container_name: kafka-connect
+    hostname: kafka-connect
+    ports:
+      - 8083:8083
+    environment:
+      CUB_CLASSPATH: '/usr/share/java/confluent-security/connect/*:/usr/share/java/kafka/*:/usr/share/java/cp-base-new/*'
+      CONNECT_BOOTSTRAP_SERVERS: "${CCLOUD_BOOTSTRAP}"
+      CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_SASL_MECHANISM: PLAIN
+      CONNECT_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username='${CCLOUD_KAFKA_API_KEY}' password='${CCLOUD_KAFKA_API_SECRET}'";
+      CONNECT_REQUEST_TIMEOUT_MS: 20000
+      CONNECT_RETRY_BACKOFF_MS: 500
+
+      CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: self-managed-connect
+      CONNECT_CONFIG_STORAGE_TOPIC: self-managed-connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: self-managed-connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: self-managed-connect-status
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      # Required connection configs for Confluent Cloud Schema Registry
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "${CCLOUD_SCHEMA_REGISTRY}"
+      CONNECT_VALUE_CONVERTER_BASIC_AUTH_CREDENTIALS_SOURCE: USER_INFO
+      CONNECT_VALUE_CONVERTER_BASIC_AUTH_USER_INFO: "${CCLOUD_SCHEMA_REGISTRY_API_KEY}:${CCLOUD_SCHEMA_REGISTRY_API_SECRET}"
+      CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
+      CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_PLUGIN_PATH: /usr/share/confluent-hub-components
+    volumes:
+       - $PWD/connect-plugins:/usr/share/confluent-hub-components
