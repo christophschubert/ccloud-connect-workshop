@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   postgres:
-    image: postgres
+    image: postgres:10
     hostname: postgres
     container_name: postgres
     restart: always
@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   kafka-connect:
-    image: confluentinc/cp-schema-registry:7.0.1
+    image: confluentinc/cp-server-connect:7.0.1
     container_name: kafka-connect
     hostname: kafka-connect
     ports:
@@ -23,10 +23,19 @@ services:
       CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
       CONNECT_SECURITY_PROTOCOL: SASL_SSL
       CONNECT_SASL_MECHANISM: PLAIN
-      CONNECT_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username='${CCLOUD_KAFKA_API_KEY}' password='${CCLOUD_KAFKA_API_SECRET}'";
+      CONNECT_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="${CCLOUD_KAFKA_API_KEY}" password="${CCLOUD_KAFKA_API_SECRET}";'
+      CONNECT_PRODUCER_BOOTSTRAP_SERVERS: "${CCLOUD_BOOTSTRAP}"
+      CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_PRODUCER_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_PRODUCER_SASL_MECHANISM: PLAIN
+      CONNECT_PRODUCER_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="${CCLOUD_KAFKA_API_KEY}" password="${CCLOUD_KAFKA_API_SECRET}";'
+      CONNECT_CONSUMER_BOOTSTRAP_SERVERS: "${CCLOUD_BOOTSTRAP}"
+      CONNECT_CONSUMER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONNECT_CONSUMER_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_CONSUMER_SASL_MECHANISM: PLAIN
+      CONNECT_CONSUMER_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="${CCLOUD_KAFKA_API_KEY}" password="${CCLOUD_KAFKA_API_SECRET}";'
       CONNECT_REQUEST_TIMEOUT_MS: 20000
       CONNECT_RETRY_BACKOFF_MS: 500
-
       CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
       CONNECT_REST_PORT: 8083
       CONNECT_GROUP_ID: self-managed-connect

@@ -1,0 +1,17 @@
+{
+  "name": "jdbc-sink-smt",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "connection.url": "jdbc:postgresql://postgres:5432/postgres",
+    "connection.user": "postgres",
+    "connection.password": "postgres",
+    "topics": "users-avro",
+    "auto.create": "true",
+    "transforms": "rename,mask",
+    "transforms.rename.type":"org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.rename.regex":"users-avro",
+    "transforms.rename.replacement":"users",
+    "transforms.mask.type": "org.apache.kafka.connect.transforms.MaskField$Value",
+    "transforms.mask.fields": "userid"
+  }
+}
